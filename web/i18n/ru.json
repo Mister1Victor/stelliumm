@@ -1,0 +1,281 @@
+{
+  "metadata": {
+    "language": "ru",
+    "status": "draft",
+    "prepared_by": "Zhanran Astrology / 湛然星座 (строки уровня страницы); машинная помощь для панелей опций; перевод на русский язык",
+    "scheme": "Исходная английская строка является ключом поиска. Ключи должны точно соответствовать английскому тексту, заключённому в _() в исходном коде web/. Разделы ниже приведены для удобства человека; во время выполнения они уплощаются.",
+    "notes": "Строки панелей опций, форм и проверки были добавлены с машинной помощью и должны быть проверены носителем языка. Запустите `python web/i18n/check_coverage.py` после редактирования, чтобы убедиться, что каждая строка _() имеет перевод."
+  },
+  "navigation": {
+    "HOME": "Главная",
+    "BIRTH CHART": "Натальная карта",
+    "RELATIONSHIPS": "Отношения",
+    "TIMING": "Время и прогнозы",
+    "PLANNER": "Планировщик",
+    "EXPLORE": "Исследовать"
+  },
+  "buttons": {
+    "CREATE CHART": "Создать карту",
+    "GENERATE PLANNER": "Создать планировщик",
+    "Download SVG": "Скачать SVG",
+    "Download PDF": "Скачать PDF",
+    "View as Python": "Показать как Python"
+  },
+  "notifications": {
+    "Please fill in all required fields": "Пожалуйста, заполните все обязательные поля",
+    "Please fill in birth details for both people": "Пожалуйста, введите данные о рождении для обоих людей",
+    "Please fill in natal birth details": "Пожалуйста, введите данные о рождении для натальной карты",
+    "Please enter a date or year": "Пожалуйста, введите дату или год",
+    "Chart generated!": "Карта создана!",
+    "PDF generated!": "PDF-отчёт создан!",
+    "Planner generated!": "Планировщик создан!",
+    "Please generate a chart first": "Сначала создайте карту",
+    "Error generating PDF:": "Ошибка при создании PDF:",
+    "Error generating chart:": "Ошибка при создании карты:",
+    "Error:": "Ошибка:",
+    "No results found": "Результатов не найдено",
+    "PDF coming soon!": "PDF скоро появится!",
+    "Code preview coming soon!": "Предпросмотр кода скоро появится!",
+    "Unknown chart type:": "Неизвестный тип карты:",
+    "chart generated!": "карта создана!"
+  },
+  "sections": {
+    "CHART OPTIONS": "Параметры карты",
+    "REPORT OPTIONS": "Параметры отчёта",
+    "CHART TYPE": "Тип карты",
+    "TIMING OPTIONS": "Параметры времени",
+    "SEARCH": "Поиск",
+    "NOTABLES": "Знаменитости",
+    "DATE RANGE": "Диапазон дат",
+    "TIMEZONE": "Часовой пояс",
+    "FRONT MATTER": "Вступительные страницы",
+    "DAILY CONTENT": "Ежедневное содержание",
+    "PAGE LAYOUT": "Макет страницы"
+  },
+  "home": {
+    "Computational Astrology": "Вычислительная астрология",
+    "for the Modern Era": "для современной эпохи",
+    "Professional-grade astrological calculations with NASA-level accuracy. Beautiful visualizations. Completely free.": "Астрологические расчёты профессионального уровня с точностью NASA. Красивые визуализации. Совершенно бесплатно.",
+    "Create Your Chart": "Создать свою карту",
+    "Explore Celebrity Charts": "Изучить карты знаменитостей",
+    "Features": "Возможности",
+    "Powered by the Stellium Python Library": "Работает на библиотеке Stellium для Python",
+    "Everything you see here is built on Stellium, a free and open-source Python library for computational astrology. Use it in your own projects!": "Всё, что вы видите здесь, построено на Stellium — бесплатной библиотеке Python с открытым исходным кодом для вычислительной астрологии. Используйте её в своих проектах!",
+    "View on GitHub →": "Смотреть на GitHub →",
+    "Generated with Stellium": "Создано с помощью Stellium",
+    "features": [
+      [
+        "★",
+        "Более 23 систем домов",
+        "Плацидус, целодомовая, Кох, равнодомовая и др. Возможность одновременного расчёта нескольких систем."
+      ],
+      [
+        "★",
+        "Сидерический и тропический зодиак",
+        "Две системы зодиака с 9 вариантами аянамсы для ведической астрологии, включая Лахири и Рамана."
+      ],
+      [
+        "★",
+        "Эссенциальные достоинства",
+        "Традиционные и современные управления, экзальтации, триплицитеты, термы и фасы."
+      ],
+      [
+        "★",
+        "Синастрия и двухколёсные карты",
+        "Карты отношений, транзиты, прогрессии, композитные карты и карты Дэвисона."
+      ],
+      [
+        "★",
+        "Солярные и лунарные возвращения",
+        "Карты дня рождения, лунарные революции, сатурналии с возможностью перелокации в любой город."
+      ],
+      [
+        "★",
+        "Вторичные прогрессии",
+        "День за год, включая ежедневные прогрессии, солнечные дуги и метод Найбода."
+      ],
+      [
+        "★",
+        "Неподвижные звёзды",
+        "26 звёзд, включая четыре царские: Альдебаран, Регул, Антарес, Фомальгаут."
+      ],
+      [
+        "★",
+        "Склонения и планеты за пределами",
+        "Экваториальные координаты, автоматическое обнаружение планет вне пределов."
+      ],
+      [
+        "★",
+        "Аспектные фигуры",
+        "Большие трины, Т-квадраты, палец Бога, стеллиумы, большие кресты и др."
+      ],
+      [
+        "★",
+        "Арабские части (жребии)",
+        "25 традиционных жребиев, включая Часть Фортуны, Часть Духа и Часть Любви, с учётом секты."
+      ],
+      [
+        "★",
+        "Средние точки",
+        "Полный анализ средних точек для методов космобиологии и уранической астрологии."
+      ],
+      [
+        "★",
+        "Красивые отчёты",
+        "Экспорт профессиональных PDF-отчётов и SVG-карт с 13 элегантными темами."
+      ]
+    ]
+  },
+  "natal": {
+    "Create Your Birth Chart": "Создать натальную карту",
+    "Natal Chart & Report": "Натальная карта и отчёт"
+  },
+  "explore": {
+    "Explore Notable Charts": "Изучить карты знаменитостей",
+    "births and events": "рождений и событий",
+    "Search by name...": "Поиск по имени...",
+    "All Categories": "Все категории",
+    "Select a notable to view their chart": "Выберите знаменитость, чтобы посмотреть её карту",
+    "Data quality:": "Качество данных:",
+    "results": "результатов"
+  },
+  "relationships": {
+    "Relationship Charts": "Карты отношений",
+    "Synastry, Composite & Davison": "Синастрия, композитная карта и карта Дэвисона",
+    "Synastry (Bi-wheel overlay)": "Синастрия (двухколёсная накладка)",
+    "Composite (Midpoint chart)": "Композитная карта (средняя точка)",
+    "Davison (Time-space midpoint)": "Карта Дэвисона (средняя точка времени и пространства)",
+    "For Composite & Davison charts:": "Для композитной карты и карты Дэвисона:"
+  },
+  "timing": {
+    "Timing & Forecasts": "Время и прогнозы",
+    "Transits, Progressions & Returns": "Транзиты, прогрессии и возвращения",
+    "Transit Date:": "Дата транзита:",
+    "Progress To:": "Прогрессия до:",
+    "Return Year:": "Год возвращения:",
+    "Near Date:": "Ближайшая дата:",
+    "Date:": "Дата:",
+    "Return Planet:": "Планета возвращения:",
+    "Relocate return chart": "Перелокация карты возвращения",
+    "Location:": "Местоположение:",
+    "City, Country": "Город, страна"
+  },
+  "planner": {
+    "Astrological Planner": "Астрологический планировщик",
+    "Generate a personalized PDF planner": "Создать персонализированный PDF-планировщик",
+    "Full Year": "Полный год",
+    "Custom Range": "Произвольный диапазон",
+    "Year:": "Год:",
+    "Start:": "Начало:",
+    "End:": "Конец:",
+    "Timezone:": "Часовой пояс:",
+    "All transit times will be displayed in this timezone.": "Время всех транзитов будет отображаться в этом часовом поясе.",
+    "Charts and reference pages at the start of your planner.": "Карты и справочные страницы в начале планировщика.",
+    "Natal Chart": "Натальная карта",
+    "Secondary Progressed Chart": "Карта вторичных прогрессий",
+    "Solar Return Chart": "Солярная карта возвращения",
+    "Profections (Lord of the Year)": "Профекции (владыка года)",
+    "Zodiacal Releasing Timeline": "Временная шкала зодиакального освобождения",
+    "Part of Fortune": "Часть Фортуны",
+    "Part of Spirit": "Часть Духа",
+    "Graphic Ephemeris": "Графический эфемерид",
+    "Full Zodiac (360°)": "Полный зодиак (360°)",
+    "90° Dial": "Диск 90°",
+    "45° Dial": "Диск 45°",
+    "What to include in your daily/weekly pages.": "Что включать в ежедневные/еженедельные страницы.",
+    "Transits to Natal Planets": "Транзиты к натальным планетам",
+    "Outer planets only": "Только внешние планеты",
+    "All planets": "Все планеты",
+    "Mundane Transits (planet-to-planet in sky)": "Мировые транзиты (планета-планета на небе)",
+    "Moon Phases (new, full, quarters)": "Фазы Луны (новолуние, полнолуние, квадратуры)",
+    "Void of Course Moon": "Луна без курса",
+    "Traditional (Sun-Saturn)": "Традиционные (Солнце-Сатурн)",
+    "Modern (includes outers)": "Современные (включая внешние планеты)",
+    "Sign Ingresses": "Вхождения в знаки",
+    "Retrograde/Direct Stations": "Стояния (ретроградные/директные)",
+    "Page Size:": "Размер страницы:",
+    "A4": "A4",
+    "A5 (Half A4)": "A5 (половина A4)",
+    "US Letter": "US Letter",
+    "Week Starts On:": "Неделя начинается с:",
+    "Sunday": "Воскресенья",
+    "Monday": "Понедельника",
+    "Binding Margin:": "Поле для переплёта:",
+    "Generating your planner...": "Создание планировщика...",
+    "This may take a minute or two.": "Это может занять минуту или две."
+  },
+  "options": {
+    "Zodiac System": "Система зодиака",
+    "Tropical (Western)": "Тропический (западный)",
+    "Sidereal (Vedic)": "Сидерический (ведический)",
+    "Ayanamsa:": "Аянамса:",
+    "House System": "Система домов",
+    "House Systems": "Системы домов",
+    "Select one or more:": "Выберите одну или несколько:",
+    "Popular": "Популярные",
+    "Traditional": "Традиционные",
+    "Modern & Specialized": "Современные и специализированные",
+    "Aspects": "Аспекты",
+    "Calculate Aspects": "Рассчитывать аспекты",
+    "Show Aspects": "Показывать аспекты",
+    "Aspect Set:": "Набор аспектов:",
+    "Major: Conjunction, Opposition, Trine, Square, Sextile": "Основные: соединение, оппозиция, трин, квадрат, секстиль",
+    "Minor: Semi-sextile, Semi-square, Sesquiquadrate, Quincunx": "Второстепенные: полусекстиль, полуквадрат, полутораквадрат, квинконс",
+    "Harmonic: Quintile, Bi-quintile, Septile, Novile": "Гармонические: квинтиль, биквинтиль, септиль, новиль",
+    "Calculations": "Вычисления",
+    "Essential Dignities": "Эссенциальные достоинства",
+    "Rulerships, exaltations, triplicities, terms, faces": "Управления, экзальтации, триплицитеты, термы, фасы",
+    "Declinations": "Склонения",
+    "Equatorial coordinates, out-of-bounds detection": "Экваториальные координаты, обнаружение выходов за пределы",
+    "Aspect Patterns": "Аспектные фигуры",
+    "Grand Trines, T-Squares, Yods, Stelliums": "Большие трины, Т-квадраты, иоды, стеллиумы",
+    "Midpoints": "Средние точки",
+    "Direct midpoints for all planet pairs": "Прямые средние точки для всех пар планет",
+    "Arabic Parts": "Арабские части (жребии)",
+    "25+ lots: Fortune, Spirit, Love, etc. (sect-aware)": "Более 25 жребиев: Фортуна, Дух, Любовь и др. (с учётом секты)",
+    "Fixed Stars": "Неподвижные звёзды",
+    "Royal Stars (4)": "Царские звёзды (4)",
+    "Major Stars (15)": "Главные звёзды (15)",
+    "All Stars (26)": "Все звёзды (26)",
+    "Theme & Palettes": "Тема и палитры",
+    "Chart Theme": "Тема карты",
+    "Color Palettes": "Цветовые палитры",
+    "Zodiac Ring": "Кольцо зодиака",
+    "Aspect Lines": "Линии аспектов",
+    "Planet Glyphs": "Глифы планет",
+    "Sign Info Colors": "Цвета информации о знаках",
+    "Sign Colors": "Цвета знаков",
+    "Color sign glyphs": "Окрашивать глифы знаков",
+    "Display Options": "Параметры отображения",
+    "Show Header Band": "Показывать заголовочную полосу",
+    "Name, location, coordinates, datetime": "Имя, местоположение, координаты, дата и время",
+    "Show Moon Phase": "Показывать фазу Луны",
+    "Label": "Метка"
+  },
+  "celestial_objects": {
+    "Celestial Objects": "Небесные тела",
+    "Planets": "Планеты",
+    "Nodes & Points": "Узлы и точки",
+    "North & South Nodes": "Северный и Южный узлы",
+    "Chiron": "Хирон",
+    "Lilith (Mean)": "Лилит (Средняя)",
+    "Lilith (True)": "Лилит (Истинная)",
+    "Asteroids": "Астероиды",
+    "Ceres": "Церера",
+    "Pallas": "Паллада",
+    "Juno": "Юнона",
+    "Vesta": "Веста",
+    "Hygiea": "Гигея",
+    "Eris": "Эрида",
+    "Sun": "Солнце",
+    "Moon": "Луна",
+    "Mercury": "Меркурий",
+    "Venus": "Венера",
+    "Mars": "Марс",
+    "Jupiter": "Юпитер",
+    "Saturn": "Сатурн",
+    "Uranus": "Уран",
+    "Neptune": "Нептун",
+    "Pluto": "Плутон"
+}
+}

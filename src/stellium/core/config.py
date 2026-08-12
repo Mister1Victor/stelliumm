@@ -52,12 +52,14 @@ class CalculationConfig:
             "Pluto",
         ]
     )
-    include_nodes: bool = True
-    include_chiron: bool = True
+    include_nodes: bool = False  # North & South Nodes excluded by default
+    include_chiron: bool = False  # Chiron excluded by default
     include_points: list[str] = field(
-        default_factory=lambda: ["Mean Apogee"]  # Black Moon Lilith by default
-    )
-    include_asteroids: list[str] = field(default_factory=list)  # Default empty
+        default_factory=list
+    )  # No Lilith (Mean Apogee) by default
+    include_asteroids: list[str] = field(
+        default_factory=lambda: ["Ceres", "Eris"]
+    )  # Ceres and Eris included by default
 
     # Zodiac system configuration
     zodiac_type: ZodiacType = ZodiacType.TROPICAL
@@ -79,16 +81,16 @@ class CalculationConfig:
             include_nodes=False,
             include_chiron=False,
             include_points=[],
-            include_asteroids=[],
+            include_asteroids=["Eris"],  # Keep Eris in minimal as well
         )
 
     @classmethod
     def comprehensive(cls) -> "CalculationConfig":
         """Comprehensive calculation -- a well-rounded set."""
         return cls(
-            include_nodes=True,
-            include_chiron=True,
-            include_points=["Mean Apogee", "True Apogee"],  # Both Liliths
+            include_nodes=False,
+            include_chiron=["Mean Apogee", "True Apogee"],  # Both Liliths
+            include_points=False,
             # The big-four asteroids plus Hygiea (the fourth-largest, and the fifth of the
             # classical "big five"); Hygiea was silently absent until its Swiss Ephemeris
             # id was corrected. Chiron/Pholus are the centaurs.
@@ -100,5 +102,6 @@ class CalculationConfig:
                 "Juno",
                 "Vesta",
                 "Hygiea",
+                "Eris",
             ],
         )

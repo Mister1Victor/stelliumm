@@ -15,6 +15,7 @@ from config import COLORS
 from i18n import report_locale, wt
 from nicegui import ui
 from state import ChartState, PDFReportState
+from stellium.core.config import CalculationConfig
 
 # Stellium imports
 from stellium import ChartBuilder
@@ -112,6 +113,27 @@ def create_natal_page():
                 datetime_str, location_input, name=state.name
             )
 
+            # === Celestial objects configuration ===
+            points = []
+            if state.include_lilith_mean:
+                points.append("Mean Apogee")
+            if state.include_lilith_true:
+                points.append("True Apogee")
+
+            config = CalculationConfig(
+                include_planets=state.include_planets,
+                include_nodes=state.include_nodes,
+                include_chiron=state.include_chiron,
+                include_points=[],
+                include_asteroids=state.include_asteroids,
+            )
+            builder = builder.with_config(config)
+
+            # Если Эрида выбрана, добавляем TNO явно
+            if "Eris" in state.include_asteroids:
+                builder = builder.with_tnos()
+            # === End celestial objects ===
+
             # House systems
             if state.house_systems:
                 houses = [
@@ -130,9 +152,14 @@ def create_natal_page():
             if state.time_unknown:
                 builder = builder.with_unknown_time()
 
-            # Aspects
+                # Aspects
             if state.include_aspects:
-                builder = builder.with_aspects()
+                from stellium.core.config import AspectConfig
+                from stellium.engines.aspects import ModernAspectEngine
+
+                aspect_config = AspectConfig(include_angles=False)
+                engine = ModernAspectEngine(config=aspect_config)
+                builder = builder.with_aspects(engine)
 
             # Components
             if state.include_dignities:
@@ -159,6 +186,12 @@ def create_natal_page():
             # Calculate
             chart = builder.calculate()
 
+            # Убираем Vertex из позиций перед визуализацией
+            if not state.show_vertex:
+                from dataclasses import replace
+                filtered = [p for p in chart.positions if p.name != "Vertex"]
+                chart = replace(chart, positions=filtered)
+
             # Store for PDF generation
             calculated_chart["ref"] = chart
 
@@ -167,7 +200,8 @@ def create_natal_page():
             drawer = drawer.with_theme(state.theme)
             drawer = drawer.with_zodiac_palette(state.zodiac_palette)
             drawer = drawer.with_aspect_palette(state.aspect_palette)
-            drawer = drawer.with_planet_glyph_palette(state.planet_glyph_palette)
+            drawer = drawer.with_planet_glyph_palette(
+                state.planet_glyph_palette)
             if state.color_sign_info:
                 drawer = drawer.with_adaptive_colors(sign_info=True)
 
@@ -196,7 +230,8 @@ def create_natal_page():
             if state.show_aspect_counts:
                 drawer = drawer.with_aspect_counts(position="top-right")
             if state.show_element_modality:
-                drawer = drawer.with_element_modality_table(position="bottom-left")
+                drawer = drawer.with_element_modality_table(
+                    position="bottom-left")
 
             # Tables
             if state.show_tables:
@@ -244,11 +279,13 @@ def create_natal_page():
         """Download the chart as an SVG file."""
         if chart_svg["content"]:
             # Generate filename from name or default
-            name_part = state.name.replace(" ", "_").lower() if state.name else "chart"
+            name_part = state.name.replace(
+                " ", "_").lower() if state.name else "chart"
             filename = f"{name_part}_natal_chart.svg"
 
             # Trigger download
-            ui.download(chart_svg["content"].encode("utf-8"), filename, "image/svg+xml")
+            ui.download(chart_svg["content"].encode(
+                "utf-8"), filename, "image/svg+xml")
             track_event(SVG_DOWNLOADED, {"page": "natal"})
 
     def show_code():
@@ -337,7 +374,8 @@ def create_natal_page():
                 )
 
             # Generate filename
-            name_part = state.name.replace(" ", "_").lower() if state.name else "chart"
+            name_part = state.name.replace(
+                " ", "_").lower() if state.name else "chart"
             filename = f"{name_part}_natal_report.pdf"
 
             # For PDF with chart image, we need to save SVG to temp file
@@ -393,7 +431,8 @@ def create_natal_page():
                     os.unlink(chart_svg_path)
 
         except Exception as e:
-            ui.notify(f"{_('Error generating PDF:')} {str(e)}", type="negative")
+            ui.notify(f"{_('Error generating PDF:')} {str(e)}",
+                      type="negative")
             import traceback
 
             traceback.print_exc()
@@ -469,11 +508,13 @@ def create_natal_page():
 
                 # RIGHT COLUMN: Chart display (grows to fill space)
                 with ui.column().classes("w-full lg:flex-1 min-w-0"):
-                    chart_container["ref"] = ui.element("div").classes("w-full")
+                    chart_container["ref"] = ui.element(
+                        "div").classes("w-full")
                     with chart_container["ref"]:
                         create_chart_display(None)
 
-                    actions_container["ref"] = ui.element("div").classes("w-full")
+                    actions_container["ref"] = ui.element(
+                        "div").classes("w-full")
                     with actions_container["ref"]:
                         create_chart_actions(
                             on_download_svg=download_svg,

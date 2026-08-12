@@ -29,6 +29,7 @@ _raw_cache: dict[str, dict] = {}
 # appearing as its own selectable language — users pick a region (TW/HK), not the base.
 _DISPLAY_NAMES = {
     "en": "English",
+    "ru": "Русский",          # ← добавьте эту строку
     "zh_CN": "简体中文",
     "zh_Hant_TW": "繁體中文（台灣）",
     "zh_Hant_HK": "繁體中文（香港）",
@@ -121,7 +122,7 @@ def get_user_locale() -> str:
     try:
         return app.storage.user.get("language", "en")
     except Exception:
-        return "en"
+        return "ru"
 
 
 def set_user_locale(locale: str) -> None:

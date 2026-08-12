@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
 """
-Stellium Web - Main Entry Point
+Stellium Web — Main Entry Point
 
-A beautiful web interface for the Stellium astrology library.
+A beautiful web interface for the Stellium astrology library,
+plus REST API for Flutter/mobile clients.
 
 Usage:
     cd web
     python main.py
 
-    # Or from repo root:
-    python web/main.py
-
 Then visit http://localhost:8080
+API docs: http://localhost:8080/docs
 """
 
 import logging
@@ -20,6 +19,7 @@ from pathlib import Path
 
 from config import COLORS, FONTS, GOOGLE_FONTS_URL
 from fastapi import Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from nicegui import app, ui
 from pages.explore import create_explore_page
@@ -30,30 +30,30 @@ from pages.relationships import create_relationships_page
 from pages.timing import create_timing_page
 from starlette.responses import PlainTextResponse
 
+# REST API для Flutter клиента (должен быть в том же каталоге, что и main.py)
+from api import router as api_router
+
+
 # =============================================================================
 # LOGGING
 # =============================================================================
 
 logger = logging.getLogger("stellium.web")
 
-# Configure root logger for the webapp
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-# Route Python warnings (including Stellium's StelliumWarning family — bad
-# import rows, geocoding failures, invalid config) into the logging system so
-# they land in the app log instead of being lost to stderr. Stellium's own
-# logger already propagates here via the root handler above; see
-# docs/development/specs/STRUCTURED_LOGGING_SPEC.md (Phase 6).
+# Маршрутизируем Python warnings в логгер (включая StelliumWarning)
 logging.captureWarnings(True)
 
-# Quiet down noisy libraries
+# Глушим шумные библиотеки
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.getLogger("httpcore").setLevel(logging.WARNING)
 logging.getLogger("nicegui").setLevel(logging.WARNING)
+
 
 # =============================================================================
 # SEO / META
@@ -67,22 +67,16 @@ SITE_DESCRIPTION = (
 )
 SITE_URL = "https://stelliumastro.app"
 
+
 # =============================================================================
 # GLOBAL STYLES
 # =============================================================================
 
-
 def setup_styles(page_title: str = "", page_description: str = ""):
-    """Add global CSS styles, fonts, and meta tags.
-
-    Args:
-        page_title: Page-specific title (prepended to site name).
-        page_description: Page-specific description (falls back to site default).
-    """
+    """Добавляет глобальные CSS стили, шрифты и мета-теги."""
     full_title = f"{page_title} | {SITE_NAME}" if page_title else SITE_NAME
     description = page_description or SITE_DESCRIPTION
 
-    # Set Quasar's color palette using NiceGUI's built-in method
     ui.colors(
         primary=COLORS["primary"],
         secondary=COLORS["secondary"],
@@ -91,12 +85,9 @@ def setup_styles(page_title: str = "", page_description: str = ""):
         warning=COLORS["gold"],
     )
 
-    # Analytics (Umami — privacy-friendly, no cookies)
     from analytics import tracking_script
-
     ui.add_head_html(tracking_script())
 
-    # Meta tags for SEO and social sharing
     ui.add_head_html(f"""
     <title>{full_title}</title>
     <meta name="description" content="{description}">
@@ -114,42 +105,23 @@ def setup_styles(page_title: str = "", page_description: str = ""):
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="{GOOGLE_FONTS_URL}" rel="stylesheet">
     <style>
-        /* Base styles */
         body {{
             font-family: 'Crimson Pro', serif;
             background-color: {COLORS["cream"]};
             color: {COLORS["text"]};
         }}
-
-        /* Typography */
         .font-display {{ font-family: '{FONTS["display"]}', serif; }}
-
-        /* Links */
         a {{ color: {COLORS["gold"]}; }}
         a:hover {{ color: {COLORS["primary"]}; }}
-
-        /* Nav links */
         .nav-link {{
             color: {COLORS["text_muted"]} !important;
             transition: color 0.2s ease !important;
         }}
-        .nav-link:hover {{
-            color: {COLORS["gold"]} !important;
-        }}
-
-        /* Remove NiceGUI default padding */
-        .nicegui-content {{
-            padding: 0 !important;
-        }}
-
-        /* Underline-only inputs */
-        .minimal-input .q-field__control {{
-            background: transparent !important;
-        }}
+        .nav-link:hover {{ color: {COLORS["gold"]} !important; }}
+        .nicegui-content {{ padding: 0 !important; }}
+        .minimal-input .q-field__control {{ background: transparent !important; }}
         .minimal-input .q-field__control:before,
-        .minimal-input .q-field__control:after {{
-            display: none !important;
-        }}
+        .minimal-input .q-field__control:after {{ display: none !important; }}
         .minimal-input .q-field__native {{
             border: none !important;
             border-bottom: 1px solid {COLORS["text"]} !important;
@@ -165,20 +137,15 @@ def setup_styles(page_title: str = "", page_description: str = ""):
         .minimal-input .q-field__native::placeholder {{
             color: {COLORS["accent"]} !important;
         }}
-
-        /* Checkbox/Radio styling */
         .q-checkbox__inner--truthy, .q-radio__inner--truthy {{
             color: {COLORS["secondary"]} !important;
         }}
-
-        /* Toggle/Button-toggle styling - flat and subtle */
         .q-btn-toggle {{
             border: none !important;
             border-radius: 0.25rem !important;
             background: transparent !important;
             box-shadow: none !important;
         }}
-        /* All toggle buttons - base typography */
         .q-btn-toggle .q-btn {{
             font-family: 'Crimson Pro', serif !important;
             font-size: 0.75rem !important;
@@ -187,7 +154,6 @@ def setup_styles(page_title: str = "", page_description: str = ""):
             min-height: 24px !important;
             box-shadow: none !important;
         }}
-        /* Inactive toggle buttons */
         .q-btn-toggle .q-btn:not(.q-btn--active) {{
             color: {COLORS["text_muted"]} !important;
             background-color: transparent !important;
@@ -196,24 +162,16 @@ def setup_styles(page_title: str = "", page_description: str = ""):
             color: {COLORS["text"]} !important;
             background-color: {COLORS["cream_dark"]} !important;
         }}
-        /* Active toggle button */
         .q-btn-toggle .q-btn.q-btn--active {{
             color: {COLORS["primary"]} !important;
             background-color: {COLORS["cream_dark"]} !important;
             font-weight: 600 !important;
         }}
-        /* Remove inner borders between toggle buttons */
-        .q-btn-toggle .q-btn + .q-btn {{
-            border-left: none !important;
-        }}
-
-        /* Button styling - override Quasar defaults */
+        .q-btn-toggle .q-btn + .q-btn {{ border-left: none !important; }}
         .q-btn {{
             font-family: 'Crimson Pro', serif !important;
             letter-spacing: 0.05em;
         }}
-
-        /* Primary filled buttons */
         .q-btn--standard:not(.q-btn--outline) {{
             background-color: {COLORS["primary"]} !important;
             color: white !important;
@@ -221,25 +179,13 @@ def setup_styles(page_title: str = "", page_description: str = ""):
         .q-btn--standard:not(.q-btn--outline):hover {{
             background-color: {COLORS["secondary"]} !important;
         }}
-
-        /* Outline buttons */
         .q-btn--outline {{
             color: {COLORS["primary"]} !important;
             border-color: {COLORS["primary"]} !important;
         }}
-        .q-btn--outline:hover {{
-            background-color: {COLORS["cream_dark"]} !important;
-        }}
-
-        /* Flat buttons (icon buttons, etc) */
-        .q-btn--flat {{
-            color: {COLORS["text"]} !important;
-        }}
-        .q-btn--flat:hover {{
-            background-color: {COLORS["cream_dark"]} !important;
-        }}
-
-        /* Gold accent buttons */
+        .q-btn--outline:hover {{ background-color: {COLORS["cream_dark"]} !important; }}
+        .q-btn--flat {{ color: {COLORS["text"]} !important; }}
+        .q-btn--flat:hover {{ background-color: {COLORS["cream_dark"]} !important; }}
         .btn-gold.q-btn--outline {{
             color: {COLORS["gold"]} !important;
             border-color: {COLORS["gold"]} !important;
@@ -247,54 +193,37 @@ def setup_styles(page_title: str = "", page_description: str = ""):
         .btn-gold.q-btn--outline:hover {{
             background-color: rgba(184, 149, 61, 0.1) !important;
         }}
-
-        /* Expansion panel styling */
         .q-expansion-item__container {{
             border: 1px solid {COLORS["border"]} !important;
             border-radius: 0.25rem !important;
             margin-bottom: 0.5rem !important;
         }}
-
-        /* Selection highlight */
-        ::selection {{
-            background-color: {COLORS["accent"]};
-            color: white;
-        }}
-
-        /* Scrollbar styling (webkit) */
-        ::-webkit-scrollbar {{
-            width: 8px;
-            height: 8px;
-        }}
-        ::-webkit-scrollbar-track {{
-            background: {COLORS["cream_dark"]};
-        }}
+        ::selection {{ background-color: {COLORS["accent"]}; color: white; }}
+        ::-webkit-scrollbar {{ width: 8px; height: 8px; }}
+        ::-webkit-scrollbar-track {{ background: {COLORS["cream_dark"]}; }}
         ::-webkit-scrollbar-thumb {{
             background: {COLORS["accent"]};
             border-radius: 4px;
         }}
-        ::-webkit-scrollbar-thumb:hover {{
-            background: {COLORS["secondary"]};
-        }}
+        ::-webkit-scrollbar-thumb:hover {{ background: {COLORS["secondary"]}; }}
     </style>
     """)
 
 
 # =============================================================================
-# PAGES
+# NICEGUI PAGES (HTML UI)
 # =============================================================================
-
 
 @ui.page("/")
 async def home():
-    """Home/landing page."""
+    """Главная страница."""
     setup_styles()
     create_home_page()
 
 
 @ui.page("/natal")
 async def natal():
-    """Natal chart builder page."""
+    """Натальная карта."""
     setup_styles(
         "Natal Chart",
         "Generate a professional natal birth chart with aspects, houses, and dignities.",
@@ -304,25 +233,27 @@ async def natal():
 
 @ui.page("/relationships")
 async def relationships():
-    """Relationships chart page (synastry, composite, davison)."""
+    """Синастрия, композит, Дэвисон."""
     setup_styles(
-        "Relationships", "Synastry, composite, and Davison relationship charts."
+        "Relationships",
+        "Synastry, composite, and Davison relationship charts.",
     )
     create_relationships_page()
 
 
 @ui.page("/timing")
 async def timing():
-    """Timing chart page (transits, progressions, returns)."""
+    """Транзиты, прогрессии, соляры."""
     setup_styles(
-        "Timing", "Transits, progressions, solar returns, and timing analysis."
+        "Timing",
+        "Transits, progressions, solar returns, and timing analysis.",
     )
     create_timing_page()
 
 
 @ui.page("/planner")
 async def planner():
-    """Astrological planner generation page."""
+    """Астрологический планировщик."""
     setup_styles(
         "Planner",
         "Generate a personalized astrological PDF planner with transits and Moon phases.",
@@ -332,7 +263,7 @@ async def planner():
 
 @ui.page("/explore")
 async def explore():
-    """Notable births explorer."""
+    """Известные личности."""
     setup_styles(
         "Explore Notable Charts",
         "Browse birth charts of famous historical figures — scientists, artists, leaders, and more.",
@@ -341,13 +272,11 @@ async def explore():
 
 
 # =============================================================================
-# BOT / CRAWLER HANDLING
+# SERVICE ENDPOINTS (FastAPI)
 # =============================================================================
 
 ROBOTS_TXT = """\
 # stelliumastro.app — interactive astrology chart tool
-# Most pages require user interaction and aren't useful to index.
-
 User-agent: *
 Allow: /
 Allow: /explore
@@ -355,7 +284,6 @@ Disallow: /wp-admin/
 Disallow: /wp-login.php
 Disallow: /.env
 
-# Block aggressive SEO crawlers that add no value
 User-agent: AhrefsBot
 Disallow: /
 
@@ -371,13 +299,13 @@ Sitemap: https://stelliumastro.app/sitemap.xml
 
 @ui.page("/robots.txt", dark=False)
 async def robots_txt():
-    """Serve robots.txt to stop crawlers from 404-spamming the logs."""
+    """Отдаём robots.txt для поисковых ботов."""
     return PlainTextResponse(ROBOTS_TXT, media_type="text/plain")
 
 
 @app.get("/sitemap.xml")
 async def sitemap():
-    """Serve sitemap.xml for search engines."""
+    """Отдаём sitemap.xml для поисковиков."""
     sitemap_path = Path(__file__).parent / "static" / "sitemap.xml"
     content = sitemap_path.read_text(encoding="utf-8")
     return PlainTextResponse(content, media_type="application/xml")
@@ -385,36 +313,37 @@ async def sitemap():
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint for Railway and monitoring."""
+    """Health-check endpoint для Railway и мониторинга."""
     return {"status": "ok", "service": "stellium-web"}
 
 
+# =============================================================================
+# MIDDLEWARE
+# =============================================================================
+
+# Middleware в FastAPI применяются в обратном порядке добавления (LIFO).
+# То есть последний добавленный выполняется первым.
+# Порядок снизу вверх:
+#   1. request_middleware — фильтрация ботов, логирование
+#   2. CORSMiddleware — заголовки CORS для Flutter Web (должен быть самым внешним)
+
 @app.middleware("http")
 async def request_middleware(request: Request, call_next):
-    """Bot filtering and request logging."""
+    """Фильтрация ботов и логирование запросов."""
     import time
 
     path = request.url.path.lower()
 
-    # Silently reject known bot probe paths
-    if any(
-        path.endswith(ext) for ext in (".php", ".asp", ".aspx", ".jsp", ".cgi")
-    ) or any(
-        probe in path
-        for probe in (
-            "/wp-admin",
-            "/wp-login",
-            "/wp-content",
-            "/wp-includes",
-            "/.env",
-            "/xmlrpc",
-            "/admin/",
-            "/phpmyadmin",
-        )
-    ):
+    # Тихо отклоняем известные probe-пути
+    bot_extensions = (".php", ".asp", ".aspx", ".jsp", ".cgi")
+    bot_probes = (
+        "/wp-admin", "/wp-login", "/wp-content", "/wp-includes",
+        "/.env", "/xmlrpc", "/admin/", "/phpmyadmin",
+    )
+    if any(path.endswith(ext) for ext in bot_extensions) or \
+       any(probe in path for probe in bot_probes):
         return JSONResponse(status_code=404, content={"detail": "Not found"})
 
-    # Log real page requests (skip static assets and websocket noise)
     start = time.time()
     response = await call_next(request)
     elapsed = time.time() - start
@@ -423,6 +352,7 @@ async def request_middleware(request: Request, call_next):
         not path.startswith("/_nicegui")
         and not path.startswith("/static")
         and not path.startswith("/_event")
+        and not path.startswith("/api/")  # API логируем отдельно
         and path != "/health"
         and request.method == "GET"
         and "websocket" not in request.headers.get("upgrade", "")
@@ -443,17 +373,12 @@ async def request_middleware(request: Request, call_next):
 # =============================================================================
 
 if __name__ in {"__main__", "__mp_main__"}:
-    import os
-
-    # Get port from environment (Railway sets PORT), default to 8080 for local dev
+    # Порт из переменной окружения (Railway) или 8080 для локальной разработки
     port = int(os.environ.get("PORT", 8080))
-
-    # Check if running in production (Railway sets RAILWAY_ENVIRONMENT)
     is_production = os.environ.get("RAILWAY_ENVIRONMENT") is not None
 
-    # Session cookies are signed with this secret. The dev default is public,
-    # so in production an unset/default secret would let anyone forge
-    # app.storage.user — refuse to start rather than ship a known secret.
+    # Секрет для подписи session cookies.
+    # В production дефолтный секрет недопустим — иначе любой сможет подделать сессию.
     DEV_STORAGE_SECRET = "stellium-dev-secret"
     storage_secret = os.environ.get("STORAGE_SECRET", DEV_STORAGE_SECRET)
     if is_production and storage_secret == DEV_STORAGE_SECRET:
@@ -462,19 +387,40 @@ if __name__ in {"__main__", "__mp_main__"}:
             "(the default dev secret is public and would allow session forgery)."
         )
 
-    # Only print startup message in main process (not multiprocessing worker)
+    # ─── Startup banner (только в main process) ─────────────────────────────
     if __name__ == "__main__":
-        print("\n" + "=" * 50)
-        print("  ★  Stellium Web  ★")
-        print("=" * 50)
-        print(f"\n  Starting server on port {port}\n")
+        print()
+        print("  ✦" + "═" * 48 + "✦")
+        print("  ║         ★  STELLIUM WEB + API  ★          ║")
+        print("  ✦" + "═" * 48 + "✦")
+        print(f"  ║  Web UI:    http://localhost:{port}              ║")
+        print(f"  ║  API docs:  http://localhost:{port}/docs         ║")
+        print(f"  ║  Health:    http://localhost:{port}/health       ║")
+        print("  ✦" + "═" * 48 + "✦")
+        print()
 
+    # ─── Регистрация API роутера ────────────────────────────────────────────
+    # Эндпоинты из api.py: /api/calculate-chart, /api/calculate-houses
+    app.include_router(api_router)
+
+    # ─── CORS middleware (должен быть добавлен ПОСЛЕДНИМ, чтобы применяться ПЕРВЫМ) ─
+    # Нужен, чтобы Flutter Web (Chrome) мог обращаться к API на другом порту.
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    # ─── Запуск NiceGUI ─────────────────────────────────────────────────────
     ui.run(
         title="Stellium",
         favicon="★",
-        host="0.0.0.0",  # Bind to all interfaces (required for Railway)
+        # Привязка ко всем интерфейсам (нужно для Railway)
+        host="0.0.0.0",
         port=port,
-        reload=not is_production,  # Hot reload only in development
-        show=False,  # Don't auto-open browser
+        reload=not is_production,  # Hot reload только в dev
+        show=False,                # Не открывать браузер автоматически
         storage_secret=storage_secret,
     )

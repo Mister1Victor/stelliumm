@@ -12,11 +12,11 @@ class ChartState:
     """Reactive state for chart configuration."""
 
     # Birth data
-    name: str = ""
-    date: str = ""
-    time: str = ""
+    name: str = "Victor"
+    date: str = "1980-06-01"
+    time: str = "06:30"
     time_unknown: bool = False
-    location: str = ""
+    location: str = "Brest, Belarus"
 
     # Optional explicit coordinates (if user enters coords instead of place name)
     latitude: float | None = None
@@ -27,11 +27,23 @@ class ChartState:
     ayanamsa: str = "lahiri"
 
     # House systems (multiple allowed)
-    house_systems: list[str] = field(default_factory=lambda: ["Placidus"])
+    house_systems: list[str] = field(default_factory=lambda: ["Koch"])
 
     # Aspect configuration
     include_aspects: bool = True
     aspect_mode: str = "major"  # major, all, minor, harmonic
+
+    # Celestial objects selection
+    include_planets: list[str] = field(default_factory=lambda: [
+        "Sun", "Moon", "Mercury", "Venus", "Mars",
+        "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto"
+    ])
+    include_nodes: bool = False
+    include_chiron: bool = False
+    include_lilith_mean: bool = False      # Mean Apogee
+    include_lilith_true: bool = False     # True Apogee
+    include_asteroids: list[str] = field(
+        default_factory=lambda: ["Eris", "Ceres"])
 
     # Components / Calculations
     include_dignities: bool = False
@@ -68,6 +80,8 @@ class ChartState:
     show_chart_info: bool = True
     show_aspect_counts: bool = False
     show_element_modality: bool = False
+
+    show_vertex: bool = False  # ← по умолчанию скрыт
 
     def is_valid(self) -> bool:
         """Check if we have enough data to generate a chart."""
@@ -180,7 +194,8 @@ def create_report_state_from_chart_state(chart_state: ChartState) -> PDFReportSt
         include_aspect_patterns=chart_state.include_patterns,
         include_dignities=chart_state.include_dignities,
         include_midpoints=chart_state.include_midpoints,
-        include_midpoint_aspects=chart_state.include_midpoints,  # If midpoints enabled, show aspects too
+        # If midpoints enabled, show aspects too
+        include_midpoint_aspects=chart_state.include_midpoints,
         include_fixed_stars=chart_state.include_fixed_stars,
         include_declinations=chart_state.include_declinations,
         # Match aspect mode
@@ -198,7 +213,8 @@ class TimingState:
     natal: ChartState = field(default_factory=ChartState)
 
     # Chart type
-    chart_type: str = "transits"  # transits, progressions, solar_return, lunar_return, planetary_return
+    # transits, progressions, solar_return, lunar_return, planetary_return
+    chart_type: str = "transits"
 
     # Timing date (when to cast the transit/progressed chart)
     timing_date: str = (
@@ -214,7 +230,8 @@ class TimingState:
 
     # For returns: occurrence number (1 = first, 2 = second) vs near_date
     return_mode: str = (
-        "year"  # year (solar), near_date (lunar/planetary), occurrence (planetary)
+        # year (solar), near_date (lunar/planetary), occurrence (planetary)
+        "year"
     )
     return_occurrence: int = 1  # For occurrence mode
 

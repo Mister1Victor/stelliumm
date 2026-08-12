@@ -20,6 +20,9 @@ from i18n import wt
 from nicegui import ui
 from state import ChartState
 
+# Список астероидов для выбора
+ALL_ASTEROIDS = ["Ceres", "Pallas", "Juno", "Vesta", "Hygiea", "Eris"]
+
 
 def create_chart_options(state: ChartState, on_change=None):
     """
@@ -44,13 +47,27 @@ def create_chart_options(state: ChartState, on_change=None):
         if on_change:
             on_change()
 
+    def toggle_planet(planet: str, checked: bool):
+        if checked and planet not in state.include_planets:
+            state.include_planets.append(planet)
+        elif not checked and planet in state.include_planets:
+            state.include_planets.remove(planet)
+        if on_change:
+            on_change()
+
+    def toggle_asteroid(asteroid: str, checked: bool):
+        if checked and asteroid not in state.include_asteroids:
+            state.include_asteroids.append(asteroid)
+        elif not checked and asteroid in state.include_asteroids:
+            state.include_asteroids.remove(asteroid)
+        if on_change:
+            on_change()
+
     with ui.element("div").classes("w-full"):
         # ===== ZODIAC SYSTEM =====
-        with (
-            ui.expansion(_("Zodiac System"), icon="public")
-            .classes("w-full")
-            .props('header-class="text-sm font-medium"')
-        ):
+        with ui.expansion(_("Zodiac System"), icon="public").classes(
+            "w-full"
+        ).props('header-class="text-sm font-medium"'):
             with ui.column().classes("gap-4 p-4"):
                 ui.radio(
                     {
@@ -61,7 +78,6 @@ def create_chart_options(state: ChartState, on_change=None):
                     on_change=lambda e: update_field("zodiac_type", e.value),
                 ).props("dense")
 
-                # Ayanamsa selector (only for sidereal)
                 with ui.element("div").bind_visibility_from(
                     state, "zodiac_type", backward=lambda x: x == "sidereal"
                 ):
@@ -75,17 +91,15 @@ def create_chart_options(state: ChartState, on_change=None):
                     ).classes("w-full")
 
         # ===== HOUSE SYSTEMS =====
-        with (
-            ui.expansion(_("House Systems"), icon="home")
-            .classes("w-full")
-            .props('header-class="text-sm font-medium"')
-        ):
+        with ui.expansion(_("House Systems"), icon="home").classes(
+            "w-full"
+        ).props('header-class="text-sm font-medium"'):
             with ui.column().classes("gap-1 p-4"):
                 ui.label(_("Select one or more:")).classes("text-xs mb-2").style(
                     f"color: {COLORS['text_muted']}"
                 )
 
-                # Popular - two column
+                # Popular
                 ui.label(_("Popular")).classes("text-xs font-bold mt-2").style(
                     f"color: {COLORS['secondary']}"
                 )
@@ -94,10 +108,12 @@ def create_chart_options(state: ChartState, on_change=None):
                         ui.checkbox(
                             name,
                             value=name in state.house_systems,
-                            on_change=lambda e, n=name: toggle_house_system(n, e.value),
+                            on_change=lambda e, n=name: toggle_house_system(
+                                n, e.value
+                            ),
                         ).props("dense")
 
-                # Traditional - two column
+                # Traditional
                 ui.label(_("Traditional")).classes("text-xs font-bold mt-3").style(
                     f"color: {COLORS['secondary']}"
                 )
@@ -106,10 +122,12 @@ def create_chart_options(state: ChartState, on_change=None):
                         ui.checkbox(
                             name,
                             value=name in state.house_systems,
-                            on_change=lambda e, n=name: toggle_house_system(n, e.value),
+                            on_change=lambda e, n=name: toggle_house_system(
+                                n, e.value
+                            ),
                         ).props("dense")
 
-                # Modern & Specialized - two column
+                # Modern & Specialized
                 ui.label(_("Modern & Specialized")).classes(
                     "text-xs font-bold mt-3"
                 ).style(f"color: {COLORS['secondary']}")
@@ -118,20 +136,99 @@ def create_chart_options(state: ChartState, on_change=None):
                         ui.checkbox(
                             name,
                             value=name in state.house_systems,
-                            on_change=lambda e, n=name: toggle_house_system(n, e.value),
+                            on_change=lambda e, n=name: toggle_house_system(
+                                n, e.value
+                            ),
+                        ).props("dense")
+
+        # ===== CELESTIAL OBJECTS =====
+        with ui.expansion(_("Celestial Objects"), icon="star").classes(
+            "w-full"
+        ).props('header-class="text-sm font-medium"'):
+            with ui.column().classes("gap-2 p-4"):
+                # Planets
+                ui.label(_("Planets")).classes("text-xs font-bold").style(
+                    f"color: {COLORS['secondary']}"
+                )
+                with ui.element("div").classes("grid grid-cols-2 gap-x-2"):
+                    for planet in [
+                        "Sun",
+                        "Moon",
+                        "Mercury",
+                        "Venus",
+                        "Mars",
+                        "Jupiter",
+                        "Saturn",
+                        "Uranus",
+                        "Neptune",
+                        "Pluto",
+                    ]:
+                        ui.checkbox(
+                            _(planet),
+                            value=planet in state.include_planets,
+                            on_change=lambda e, p=planet: toggle_planet(
+                                p, e.value),
+                        ).props("dense")
+
+                # Nodes & Points
+                ui.label(_("Nodes & Points")).classes("text-xs font-bold mt-3").style(
+                    f"color: {COLORS['secondary']}"
+                )
+                ui.checkbox(
+                    _("North & South Nodes"),
+                    value=state.include_nodes,
+                    on_change=lambda e: update_field("include_nodes", e.value),
+                ).props("dense")
+                ui.checkbox(
+                    _("Chiron"),
+                    value=state.include_chiron,
+                    on_change=lambda e: update_field(
+                        "include_chiron", e.value),
+                ).props("dense")
+                ui.checkbox(
+                    _("Lilith (Mean)"),
+                    value=state.include_lilith_mean,
+                    on_change=lambda e: update_field(
+                        "include_lilith_mean", e.value
+                    ),
+                ).props("dense")
+                ui.checkbox(
+                    _("Lilith (True)"),
+                    value=state.include_lilith_true,
+                    on_change=lambda e: update_field(
+                        "include_lilith_true", e.value
+                    ),
+                ).props("dense")
+                ui.checkbox(
+                    _("Vertex"),
+                    value=state.show_vertex,
+                    on_change=lambda e: update_field("show_vertex", e.value),
+                ).props("dense")
+
+                # Asteroids
+                ui.label(_("Asteroids")).classes("text-xs font-bold mt-3").style(
+                    f"color: {COLORS['secondary']}"
+                )
+                with ui.element("div").classes("grid grid-cols-2 gap-x-2"):
+                    for asteroid in ALL_ASTEROIDS:
+                        ui.checkbox(
+                            _(asteroid),
+                            value=asteroid in state.include_asteroids,
+                            on_change=lambda e, a=asteroid: toggle_asteroid(
+                                a, e.value
+                            ),
                         ).props("dense")
 
         # ===== ASPECTS =====
-        with (
-            ui.expansion(_("Aspects"), icon="hub")
-            .classes("w-full")
-            .props('header-class="text-sm font-medium"')
-        ):
+        with ui.expansion(_("Aspects"), icon="hub").classes(
+            "w-full"
+        ).props('header-class="text-sm font-medium"'):
             with ui.column().classes("gap-3 p-4"):
                 ui.checkbox(
                     _("Calculate Aspects"),
                     value=state.include_aspects,
-                    on_change=lambda e: update_field("include_aspects", e.value),
+                    on_change=lambda e: update_field(
+                        "include_aspects", e.value),
                 ).props("dense")
 
                 with ui.element("div").bind_visibility_from(
@@ -143,7 +240,8 @@ def create_chart_options(state: ChartState, on_change=None):
                     ui.select(
                         {code: name for name, code in ASPECT_MODES},
                         value=state.aspect_mode,
-                        on_change=lambda e: update_field("aspect_mode", e.value),
+                        on_change=lambda e: update_field(
+                            "aspect_mode", e.value),
                     ).classes("w-full")
 
                     ui.label(
@@ -157,16 +255,15 @@ def create_chart_options(state: ChartState, on_change=None):
                     ).classes("text-xs").style(f"color: {COLORS['accent']}")
 
         # ===== CALCULATIONS / COMPONENTS =====
-        with (
-            ui.expansion(_("Calculations"), icon="calculate")
-            .classes("w-full")
-            .props('header-class="text-sm font-medium"')
-        ):
+        with ui.expansion(_("Calculations"), icon="calculate").classes(
+            "w-full"
+        ).props('header-class="text-sm font-medium"'):
             with ui.column().classes("gap-2 p-4"):
                 ui.checkbox(
                     _("Essential Dignities"),
                     value=state.include_dignities,
-                    on_change=lambda e: update_field("include_dignities", e.value),
+                    on_change=lambda e: update_field(
+                        "include_dignities", e.value),
                 ).props("dense")
                 ui.label(
                     _("Rulerships, exaltations, triplicities, terms, faces")
@@ -175,7 +272,8 @@ def create_chart_options(state: ChartState, on_change=None):
                 ui.checkbox(
                     _("Declinations"),
                     value=state.include_declinations,
-                    on_change=lambda e: update_field("include_declinations", e.value),
+                    on_change=lambda e: update_field(
+                        "include_declinations", e.value),
                 ).props("dense")
                 ui.label(_("Equatorial coordinates, out-of-bounds detection")).classes(
                     "text-xs ml-6 -mt-1"
@@ -184,7 +282,8 @@ def create_chart_options(state: ChartState, on_change=None):
                 ui.checkbox(
                     _("Aspect Patterns"),
                     value=state.include_patterns,
-                    on_change=lambda e: update_field("include_patterns", e.value),
+                    on_change=lambda e: update_field(
+                        "include_patterns", e.value),
                 ).props("dense")
                 ui.label(_("Grand Trines, T-Squares, Yods, Stelliums")).classes(
                     "text-xs ml-6 -mt-1"
@@ -193,7 +292,8 @@ def create_chart_options(state: ChartState, on_change=None):
                 ui.checkbox(
                     _("Midpoints"),
                     value=state.include_midpoints,
-                    on_change=lambda e: update_field("include_midpoints", e.value),
+                    on_change=lambda e: update_field(
+                        "include_midpoints", e.value),
                 ).props("dense")
                 ui.label(_("Direct midpoints for all planet pairs")).classes(
                     "text-xs ml-6 -mt-1"
@@ -202,7 +302,8 @@ def create_chart_options(state: ChartState, on_change=None):
                 ui.checkbox(
                     _("Arabic Parts"),
                     value=state.include_arabic_parts,
-                    on_change=lambda e: update_field("include_arabic_parts", e.value),
+                    on_change=lambda e: update_field(
+                        "include_arabic_parts", e.value),
                 ).props("dense")
                 ui.label(
                     _("25+ lots: Fortune, Spirit, Love, etc. (sect-aware)")
@@ -211,7 +312,8 @@ def create_chart_options(state: ChartState, on_change=None):
                 ui.checkbox(
                     _("Fixed Stars"),
                     value=state.include_fixed_stars,
-                    on_change=lambda e: update_field("include_fixed_stars", e.value),
+                    on_change=lambda e: update_field(
+                        "include_fixed_stars", e.value),
                 ).props("dense")
 
                 with ui.element("div").bind_visibility_from(
@@ -224,17 +326,16 @@ def create_chart_options(state: ChartState, on_change=None):
                             "all": _("All Stars (26)"),
                         },
                         value=state.fixed_stars_mode,
-                        on_change=lambda e: update_field("fixed_stars_mode", e.value),
+                        on_change=lambda e: update_field(
+                            "fixed_stars_mode", e.value
+                        ),
                     ).classes("w-full ml-6")
 
         # ===== VISUALIZATION - THEME & PALETTES =====
-        with (
-            ui.expansion(_("Theme & Palettes"), icon="palette")
-            .classes("w-full")
-            .props('header-class="text-sm font-medium"')
-        ):
+        with ui.expansion(_("Theme & Palettes"), icon="palette").classes(
+            "w-full"
+        ).props('header-class="text-sm font-medium"'):
             with ui.column().classes("gap-3 p-4"):
-                # Theme
                 ui.label(_("Chart Theme")).classes("text-sm").style(
                     f"color: {COLORS['text_muted']}"
                 )
@@ -244,7 +345,6 @@ def create_chart_options(state: ChartState, on_change=None):
                     on_change=lambda e: update_field("theme", e.value),
                 ).classes("w-full")
 
-                # Palettes in two columns
                 ui.label(_("Color Palettes")).classes("text-sm mt-3").style(
                     f"color: {COLORS['text_muted']}"
                 )
@@ -256,7 +356,9 @@ def create_chart_options(state: ChartState, on_change=None):
                         ui.select(
                             ZODIAC_PALETTES,
                             value=state.zodiac_palette,
-                            on_change=lambda e: update_field("zodiac_palette", e.value),
+                            on_change=lambda e: update_field(
+                                "zodiac_palette", e.value
+                            ),
                         ).classes("w-full")
 
                     with ui.column().classes("gap-1"):
@@ -266,7 +368,9 @@ def create_chart_options(state: ChartState, on_change=None):
                         ui.select(
                             ASPECT_PALETTES,
                             value=state.aspect_palette,
-                            on_change=lambda e: update_field("aspect_palette", e.value),
+                            on_change=lambda e: update_field(
+                                "aspect_palette", e.value
+                            ),
                         ).classes("w-full")
 
                     with ui.column().classes("gap-1"):
@@ -294,13 +398,10 @@ def create_chart_options(state: ChartState, on_change=None):
                         ).props("dense")
 
         # ===== VISUALIZATION - DISPLAY =====
-        with (
-            ui.expansion(_("Display Options"), icon="visibility")
-            .classes("w-full")
-            .props('header-class="text-sm font-medium"')
-        ):
+        with ui.expansion(_("Display Options"), icon="visibility").classes(
+            "w-full"
+        ).props('header-class="text-sm font-medium"'):
             with ui.column().classes("gap-3 p-4"):
-                # Header
                 ui.checkbox(
                     _("Show Header Band"),
                     value=state.show_header,
@@ -310,11 +411,11 @@ def create_chart_options(state: ChartState, on_change=None):
                     "text-xs ml-6 -mt-1"
                 ).style(f"color: {COLORS['accent']}")
 
-                # Moon Phase
                 ui.checkbox(
                     _("Show Moon Phase"),
                     value=state.show_moon_phase,
-                    on_change=lambda e: update_field("show_moon_phase", e.value),
+                    on_change=lambda e: update_field(
+                        "show_moon_phase", e.value),
                 ).props("dense")
 
                 with ui.element("div").bind_visibility_from(
@@ -336,32 +437,32 @@ def create_chart_options(state: ChartState, on_change=None):
                             ),
                         ).props("dense")
 
-                # Info Corners
                 ui.label(_("Info Corners")).classes("text-sm mt-3").style(
                     f"color: {COLORS['text_muted']}"
                 )
                 ui.checkbox(
                     _("Chart Info (house system, ephemeris)"),
                     value=state.show_chart_info,
-                    on_change=lambda e: update_field("show_chart_info", e.value),
+                    on_change=lambda e: update_field(
+                        "show_chart_info", e.value),
                 ).props("dense")
                 ui.checkbox(
                     _("Aspect Counts"),
                     value=state.show_aspect_counts,
-                    on_change=lambda e: update_field("show_aspect_counts", e.value),
+                    on_change=lambda e: update_field(
+                        "show_aspect_counts", e.value),
                 ).props("dense")
                 ui.checkbox(
                     _("Element/Modality Balance"),
                     value=state.show_element_modality,
-                    on_change=lambda e: update_field("show_element_modality", e.value),
+                    on_change=lambda e: update_field(
+                        "show_element_modality", e.value),
                 ).props("dense")
 
-        # ===== VISUALIZATION - TABLES =====
-        with (
-            ui.expansion(_("Tables (Extended View)"), icon="table_chart")
-            .classes("w-full")
-            .props('header-class="text-sm font-medium"')
-        ):
+        # ===== TABLES (EXTENDED VIEW) =====
+        with ui.expansion(_("Tables (Extended View)"), icon="table_chart").classes(
+            "w-full"
+        ).props('header-class="text-sm font-medium"'):
             with ui.column().classes("gap-3 p-4"):
                 ui.checkbox(
                     _("Show Extended Tables"),
@@ -378,7 +479,8 @@ def create_chart_options(state: ChartState, on_change=None):
                     ui.select(
                         {code: name for name, code in TABLE_POSITIONS},
                         value=state.table_position,
-                        on_change=lambda e: update_field("table_position", e.value),
+                        on_change=lambda e: update_field(
+                            "table_position", e.value),
                     ).classes("w-full")
 
                     ui.label(_("Include:")).classes("text-sm mt-3").style(
@@ -394,7 +496,9 @@ def create_chart_options(state: ChartState, on_change=None):
                     ui.checkbox(
                         _("House Cusps Table"),
                         value=state.table_show_houses,
-                        on_change=lambda e: update_field("table_show_houses", e.value),
+                        on_change=lambda e: update_field(
+                            "table_show_houses", e.value
+                        ),
                     ).props("dense")
                     ui.checkbox(
                         _("Aspectarian Grid"),
