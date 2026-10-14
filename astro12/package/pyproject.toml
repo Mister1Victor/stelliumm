@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "astro12"
+version = "0.1.0"
+description = "School of 12 Planets: rulership system, ephemeris wrapper and LLM prompts on top of stellium (MIT)."
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Astro12AI Project" }]
+dependencies = [
+    # pyswisseph is the ONLY hard runtime dep for calculations; it ships as a
+    # C-binding with permissive licensing. stellium stays an optional extra.
+    "pyswisseph>=2.10.3",
+]
+
+[project.optional-dependencies]
+stellium = ["stellium>=0.22.0"]   # AGPL library, used via public API only
+dev = ["pytest>=8.0.0"]
+
+[tool.setuptools.packages.find]
+include = ["astro12*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
