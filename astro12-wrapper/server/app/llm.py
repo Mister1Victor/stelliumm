@@ -21,6 +21,7 @@ import urllib.request
 from collections import OrderedDict
 
 from astro12 import SYSTEM_BRIEF_RU, aspect_prompt, chart_to_prompt
+from astro12.constants import SIGN_RU
 from astro12.model import TwelveChart
 
 from .config import Settings
@@ -75,9 +76,9 @@ def _user_prompt(chart: TwelveChart, focus: str | None, lang: str) -> str:
 def _mock_interpretation(chart: TwelveChart, focus: str | None) -> str:
     """Deterministic offline 'interpretation' built from the school's data."""
     lines = ["[MOCK — режим ASTRO12_LLM_MODE=mock, реальный LLM не вызывался]", ""]
-    own = [p for p in chart.placements if p.in_own_sign]
+    own = [p for p in chart.placements if p.house_of_own_ruler]
     if own:
-        s = ", ".join(f"{p.ru} в {p.sign_ru}" for p in own)
+        s = ", ".join(f"{p.ru} в {SIGN_RU[p.sign]}" for p in own)
         lines.append(f"Управители «в своих правах»: {s}.")
     else:
         lines.append("Ни один управитель не стоит в собственном знаке.")
@@ -129,6 +130,7 @@ class LLMClient:
     @staticmethod
     def aspect_prompt(chart: TwelveChart, p1: str, p2: str,
                       aspect_name: str) -> str:
+        # package-level aspect_prompt(chart, p1_key, p2_key, aspect_name)
         return aspect_prompt(chart, p1, p2, aspect_name)
 
     # -- openai-compatible transport (stdlib only, no extra deps) ------------
