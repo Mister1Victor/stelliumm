@@ -39,12 +39,14 @@ from .prompt import SYSTEM_BRIEF_RU, aspect_prompt, chart_to_prompt  # noqa: E40
 
 
 def calculate(when: dt.datetime, *, ephe_path: str | None = None,
-              heliocentric: bool = False) -> TwelveChart:
+              heliocentric: bool = False, sidereal: bool = False,
+              ayanamsa: int | None = None) -> TwelveChart:
     """Compute the 12 governors directly with Swiss Ephemeris (no stellium)."""
     from .ephemeris import calculate_twelve
 
     rows, missing = calculate_twelve(when, ephe_path=ephe_path,
-                                     heliocentric=heliocentric)
+                                     heliocentric=heliocentric,
+                                     sidereal=sidereal, ayanamsa=ayanamsa)
     return TwelveChart.from_rows(rows, when, missing, source="direct")
 
 
