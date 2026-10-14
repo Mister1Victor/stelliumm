@@ -16,6 +16,16 @@ swe = pytest.importorskip("swisseph")
 import astro12  # noqa: E402
 
 
+STELLIUM_AVAILABLE = True
+try:
+    import stellium  # noqa: F401
+except ImportError:
+    STELLIUM_AVAILABLE = False
+
+needs_stellium = pytest.mark.skipif(not STELLIUM_AVAILABLE,
+                                    reason="stellium not installed")
+
+
 @pytest.fixture(scope="module")
 def direct_chart():
     when = dt.datetime(2000, 1, 1, tzinfo=dt.timezone.utc)
@@ -46,16 +56,6 @@ def test_prompt_generation_from_real_chart(direct_chart):
     assert "Эрида ERa" in pr
     assert "Церера ⚳" in pr
     assert pr.count("\n- ") > 20  # placements + rulerships + aspects
-
-
-STELLIUM_AVAILABLE = True
-try:
-    import stellium  # noqa: F401
-except ImportError:
-    STELLIUM_AVAILABLE = False
-
-needs_stellium = pytest.mark.skipif(not STELLIUM_AVAILABLE,
-                                    reason="stellium not installed")
 
 
 @needs_stellium

@@ -1,0 +1,6 @@
+# astro12 REST API — production dependencies.
+# NOTE: this file deliberately does NOT list stellium (AGPL). The server runs
+# in "direct" mode on pyswisseph only, so the whole service stays MIT-clean.
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pydantic>=2.7

@@ -66,20 +66,24 @@ def jd_from_utc(when: dt.datetime) -> float:
 def _calc_body(swe, jd: float, planet: PlanetInfo, flags_base: int):
     """Calculate one body; try high-precision first, then Moshier fallback.
 
-    Note on return codes: pyswisseph returns ``ret`` as the *number of valid
-    output values* (6 for a normal position+speed), not 0-on-success as one
-    might assume from the C docs. So we require ret > 0 and a finite xx[0].
+    Note on return codes: pyswisseph's ``swe.calc_ut`` returns the *result
+    flags* of the computation (bitmask, e.g. RET_STOPEPH|RET_MOSEPH), not a
+    0-on-success code as in the C docs. Success must be judged by the values
+    themselves: we require a finite longitude and — when FLG_SPEED was asked
+    for — a finite speed in xx[3].
     """
     import math
 
     last_err: Exception | None = None
+    want_speed = bool(flags_base & swe.FLG_SPEED)
     for flags in (flags_base, flags_base | swe.FLG_MOSEPH):
         try:
             xx, ret = swe.calc_ut(jd, planet.swiss_id, flags)
-            if ret > 0 and math.isfinite(xx[0]):
+            if math.isfinite(xx[0]) and (not want_speed or math.isfinite(xx[3])):
                 return xx
             last_err = RuntimeError(
-                f"swe.calc_ut returned ret={ret} for {planet.en}")
+                f"swe.calc_ut returned non-finite values for {planet.en} "
+                f"(ret={ret})")
         except Exception as exc:  # swe raises on missing .se1 files
             last_err = exc
     raise LookupError(str(last_err))
